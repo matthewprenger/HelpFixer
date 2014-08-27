@@ -1,0 +1,120 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT' }
+}
+
+def versionBuild = 0
+if (System.getenv('BUILD_NUMBER') != null)
+    versionBuild = System.getenv('BUILD_NUMBER')
+
+version = "${mod_version}.${versionBuild}"
+
+apply plugin: 'forge'
+apply plugin: 'maven-publish'
+apply plugin: 'curseforge'
+
+group = 'com.matthewprenger.helpfixer'
+archivesBaseName = 'HelpFixer'
+
+minecraft {
+    version = minecraft_version + '-' + forge_version
+    runDir = 'run'
+}
+
+curse {
+    dependsOn 'changeLog', 'reobf'
+    onlyIf { return project.hasProperty('curseforge_key') }
+
+    if (project.hasProperty('curseforge_key')) apiKey = project.curseforge_key
+    projectId = '223797'
+    changelog = ''
+    releaseType = 'release'
+}
+tasks.curse.mustRunAfter('publish')
+
+jar.manifest {
+    attributes 'Specification-Version': project.version
+    attributes 'Specification-Title': project.name
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.info'
+        include '**/*.properties'
+
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude '**/*.info'
+        exclude '**/*.properties'
+    }
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
+
+tasks.build.dependsOn sourceJar, javadocJar, deobfJar
+
+publishing {
+    tasks.publish.dependsOn 'build'
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourceJar
+            artifact javadocJar
+            artifact deobfJar
+
+            artifact source: file("build/distributions/${project.getName()}-${project.version}-changelog.txt"), classifier: 'changelog'
+        }
+    }
+
+    repositories {
+        if (project.hasProperty('mavendir')) {
+            maven { url mavendir }
+        }
+    }
+}
+
+
+import net.minecraftforge.gradle.delayed.DelayedFile
+import net.minecraftforge.gradle.delayed.DelayedString
+import net.minecraftforge.gradle.tasks.dev.ChangelogTask
+
+task changeLog(type: ChangelogTask) {
+    if (project.hasProperty('jenkins_user')) {
+
+        def jobName = "${System.getenv().JOB_NAME}"
+        def buildNumber = "${System.getenv().BUILD_NUMBER}"
+
+        setServerRoot(new DelayedString(project, 'http://direct.matthewprenger.com:8080/'))
+        setJobName(new DelayedString(project, jobName.toString()))
+        setAuthName(new DelayedString(project, project.jenkins_user))
+        setAuthPassword(new DelayedString(project, project.jenkins_pass))
+        setTargetBuild({ buildNumber.toString() })
+        setOutput(new DelayedFile(project, 'build/distributions/' + project.getName() + '-' + project.version + '-changelog.txt'))
+    }
+}
+tasks.build.dependsOn('changeLog')
+
+task release(dependsOn: [build, publish, curse])
