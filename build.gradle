@@ -20,6 +20,15 @@ apply plugin: 'curseforge'
 group = 'com.matthewprenger.helpfixer'
 archivesBaseName = 'HelpFixer'
 
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.11'
+
+}
+
 minecraft {
     version = minecraft_version + '-' + forge_version
     mappings = project.mappings
