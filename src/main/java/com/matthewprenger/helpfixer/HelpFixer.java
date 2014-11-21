@@ -33,6 +33,9 @@ public class HelpFixer {
                     if (command.getCommandName() == null) {
                         FMLLog.warning(String.format("[HelpFixer] Identified command with null name, Ignoring: %s", command.getClass().getName()));
                         iterator.remove();
+                    } else if (command.getCommandUsage(sender) == null) {
+                        FMLLog.warning(String.format("[HelpFixer] Identified command with null usage, Ignoring: %s", command.getClass().getName()));
+                        iterator.remove();
                     }
                 }
 
