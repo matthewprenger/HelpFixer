@@ -22,34 +22,26 @@ archivesBaseName = 'HelpFixer'
 
 minecraft {
     version = minecraft_version + '-' + forge_version
+    mappings = project.mappings
     runDir = 'run'
-}
-
-curse {
-    dependsOn 'changeLog', 'reobf'
-    onlyIf { return project.hasProperty('curseforge_key') }
-
-    if (project.hasProperty('curseforge_key')) apiKey = project.curseforge_key
-    projectId = '223797'
-    changelog = ''
-    releaseType = 'release'
-}
-tasks.curse.mustRunAfter('publish')
-
-jar.manifest {
-    attributes 'Specification-Version': project.version
-    attributes 'Specification-Title': project.name
 }
 
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
+    inputs.property 'description', project.description
+    inputs.property 'url', project.url
 
     from(sourceSets.main.resources.srcDirs) {
         include '**/*.info'
         include '**/*.properties'
 
-        expand 'version': project.version, 'mcversion': project.minecraft.version
+        expand([
+                'version'    : project.version,
+                'mcversion'  : project.minecraft.version,
+                'description': project.description,
+                'url'        : project.url
+        ])
     }
 
     from(sourceSets.main.resources.srcDirs) {
@@ -58,7 +50,7 @@ processResources {
     }
 }
 
-task sourceJar(type: Jar) {
+task sourceJar(type: Jar, dependsOn: sourceMainJava) {
     from sourceSets.main.allSource
     classifier = 'sources'
 }
@@ -68,53 +60,86 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
 }
 
-task deobfJar(type: Jar) {
+task deobfJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.output
     classifier = 'deobf'
 }
 
 tasks.build.dependsOn sourceJar, javadocJar, deobfJar
 
+def manifestAttributes = [
+        'Built-By'             : System.getProperty('user.name'),
+        'Created-By'           : "${System.getProperty('java.vm.version')} + (${System.getProperty('java.vm.vendor')})",
+        'Specification-Version': project.version,
+        'Specification-Title'  : project.name
+]
+
+tasks.withType(Jar) { task -> task.manifest.mainAttributes(manifestAttributes) }
+
+tasks.withType(JavaCompile) { task -> task.options.encoding = 'UTF-8' }
+
 publishing {
     tasks.publish.dependsOn 'build'
     publications {
         mavenJava(MavenPublication) {
-            from components.java
+            pom.withXml {
+                asNode().children().last() + {
+                    resolveStrategy = DELEGATE_FIRST
+                    name project.name
+                    description project.description
+                    url project.url
+                    inceptionYear project.inceptionYear
+                    packaging 'jar'
+                    scm {
+                        url project.scm_url
+                        connection project.scm_connection
+                        developerConnection project.scm_developerConnection
+                    }
+                    issueManagement {
+                        system project.issues_system
+                        url project.issues_url
+                    }
+                    licenses {
+                        license {
+                            name 'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE'
+                            url 'http://www.wtfpl.net/txt/copying/'
+                            distribution 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id 'matthewprenger'
+                            name 'Matthew Prenger'
+                            roles { role 'developer' }
+                        }
+                    }
+                }
+            }
 
+//            from components.java For some reason this is including MC deps now, need to figure out why
+            artifact jar
             artifact sourceJar
             artifact javadocJar
             artifact deobfJar
-
-            artifact source: file("build/distributions/${project.getName()}-${project.version}-changelog.txt"), classifier: 'changelog'
         }
     }
 
     repositories {
-        if (project.hasProperty('mavendir')) {
-            maven { url mavendir }
+        if (project.hasProperty('maven_url')) {
+            maven { url project.maven_url }
+        } else {
+            maven { url file('repo') }
         }
     }
 }
 
+curse {
+    dependsOn 'reobf'
+    mustRunAfter 'publish'
+    onlyIf { return project.hasProperty('curseforge_key') }
 
-import net.minecraftforge.gradle.delayed.DelayedFile
-import net.minecraftforge.gradle.delayed.DelayedString
-import net.minecraftforge.gradle.tasks.dev.ChangelogTask
-
-task changeLog(type: ChangelogTask) {
-    if (project.hasProperty('jenkins_user')) {
-
-        def jobName = "${System.getenv().JOB_NAME}"
-        def buildNumber = "${System.getenv().BUILD_NUMBER}"
-
-        setServerRoot(new DelayedString(project, 'http://direct.matthewprenger.com:8080/'))
-        setJobName(new DelayedString(project, jobName.toString()))
-        setAuthName(new DelayedString(project, project.jenkins_user))
-        setAuthPassword(new DelayedString(project, project.jenkins_pass))
-        setTargetBuild({ buildNumber.toString() })
-        setOutput(new DelayedFile(project, 'build/distributions/' + project.getName() + '-' + project.version + '-changelog.txt'))
-    }
+    if (project.hasProperty('curseforge_key')) apiKey = project.curseforge_key
+    projectId = project.curse_projectId
+    changelog = ''
+    releaseType = 'release'
 }
-tasks.build.dependsOn('changeLog')
-
-task release(dependsOn: [build, publish, curse])

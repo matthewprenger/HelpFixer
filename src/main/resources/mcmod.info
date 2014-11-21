@@ -2,8 +2,8 @@
   "modid": "HelpFixer",
   "name": "HelpFixer",
   "version": "${version}",
-  "description": "Fixes /help",
-  "url": "https://github.com/matthewprenger/HelpFixer",
+  "description": "${description}",
+  "url": "${url}",
   "authorList": ["matthewprenger"],
   "credits": "Forge, FML, and MCP for making this project possible",
   "dependencies": []
