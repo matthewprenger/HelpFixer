@@ -14,15 +14,24 @@ apply plugin: 'curseforge'
 group = 'com.matthewprenger.helpfixer'
 archivesBaseName = 'HelpFixer'
 
-if (System.getenv('BUILD_NUMBER') != null)
+if (System.getenv('BUILD_NUMBER') != null) {
     version += ".${System.getenv('BUILD_NUMBER')}"
-else
+} else {
     version += ".CUSTOM"
+}
 
 minecraft {
     version = "$minecraft_version-$forge_version"
     mappings = mappings_version
     runDir = 'run'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.11'
 }
 
 processResources {
@@ -71,12 +80,12 @@ tasks.withType(JavaCompile) { task ->
 }
 
 def manifestAttributes = [
-        'Built-By'             : System.getProperty('user.name'),
+        'Built-By'              : System.getProperty('user.name'),
         'Created-By'            : "${System.getProperty('java.version')} + (${System.getProperty('java.vendor')})",
         'Implementation-Version': project.version,
         'Implementation-Title'  : project.name,
-        'Minecraft-Version': project.minecraft.version,
-        'Forge-Version': forge_version
+        'Minecraft-Version'     : project.minecraft.version,
+        'Forge-Version'         : forge_version
 ]
 
 tasks.withType(Jar) { task -> task.manifest.mainAttributes(manifestAttributes) }
@@ -147,7 +156,9 @@ curse {
     mustRunAfter 'publish'
     onlyIf { return project.hasProperty('curseforge_key') }
 
-    if (project.hasProperty('curseforge_key')) apiKey = project.curseforge_key
+    if (project.hasProperty('curseforge_key')) {
+        apiKey = project.curseforge_key
+    }
     projectId = 223797
     changelog = project.hasProperty('changelog') ? project.changelog : ''
     releaseType = 'release'
