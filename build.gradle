@@ -7,12 +7,6 @@ buildscript {
     dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT' }
 }
 
-def versionBuild = 0
-if (System.getenv('BUILD_NUMBER') != null)
-    versionBuild = System.getenv('BUILD_NUMBER')
-
-version = "${mod_version}.${versionBuild}"
-
 apply plugin: 'forge'
 apply plugin: 'maven-publish'
 apply plugin: 'curseforge'
@@ -20,18 +14,14 @@ apply plugin: 'curseforge'
 group = 'com.matthewprenger.helpfixer'
 archivesBaseName = 'HelpFixer'
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testCompile 'junit:junit:4.11'
-
-}
+if (System.getenv('BUILD_NUMBER') != null)
+    version += ".${System.getenv('BUILD_NUMBER')}"
+else
+    version += ".CUSTOM"
 
 minecraft {
-    version = minecraft_version + '-' + forge_version
-    mappings = project.mappings
+    version = "$minecraft_version-$forge_version"
+    mappings = mappings_version
     runDir = 'run'
 }
 
@@ -59,7 +49,7 @@ processResources {
     }
 }
 
-task sourceJar(type: Jar, dependsOn: sourceMainJava) {
+task sourcesJar(type: Jar, dependsOn: sourceMainJava) {
     from sourceSets.main.allSource
     classifier = 'sources'
 }
@@ -74,13 +64,19 @@ task deobfJar(type: Jar, dependsOn: classes) {
     classifier = 'deobf'
 }
 
-tasks.build.dependsOn sourceJar, javadocJar, deobfJar
+tasks.assemble.dependsOn sourcesJar, javadocJar, deobfJar
+
+tasks.withType(JavaCompile) { task ->
+    task.options.encoding = 'UTF-8'
+}
 
 def manifestAttributes = [
         'Built-By'             : System.getProperty('user.name'),
-        'Created-By'           : "${System.getProperty('java.vm.version')} + (${System.getProperty('java.vm.vendor')})",
-        'Specification-Version': project.version,
-        'Specification-Title'  : project.name
+        'Created-By'            : "${System.getProperty('java.version')} + (${System.getProperty('java.vendor')})",
+        'Implementation-Version': project.version,
+        'Implementation-Title'  : project.name,
+        'Minecraft-Version': project.minecraft.version,
+        'Forge-Version': forge_version
 ]
 
 tasks.withType(Jar) { task -> task.manifest.mainAttributes(manifestAttributes) }
@@ -100,13 +96,13 @@ publishing {
                     inceptionYear project.inceptionYear
                     packaging 'jar'
                     scm {
-                        url project.scm_url
-                        connection project.scm_connection
-                        developerConnection project.scm_developerConnection
+                        url 'https://github.com/matthewprenger/HelpFixer'
+                        connection 'scm:git:git://github.com/matthewprenger/HelpFixer.git'
+                        developerConnection 'scm:git:git@github.com:matthewprenger/HelpFixer.git'
                     }
                     issueManagement {
-                        system project.issues_system
-                        url project.issues_url
+                        system 'github'
+                        url 'https://github.com/matthewprenger/HelpFixer/issues'
                     }
                     licenses {
                         license {
@@ -125,17 +121,22 @@ publishing {
                 }
             }
 
-//            from components.java For some reason this is including MC deps now, need to figure out why
             artifact jar
-            artifact sourceJar
+            artifact sourcesJar
             artifact javadocJar
             artifact deobfJar
         }
     }
 
     repositories {
-        if (project.hasProperty('maven_url')) {
-            maven { url project.maven_url }
+        if (project.hasProperty('forgemaven_user') && project.hasProperty('forgemaven_password')) {
+            maven {
+                credentials {
+                    username project.forgemaven_user
+                    password project.forgemaven_password
+                }
+                url 'http://files.minecraftforge.net/maven/manage/upload'
+            }
         } else {
             maven { url file('repo') }
         }
@@ -143,12 +144,11 @@ publishing {
 }
 
 curse {
-    dependsOn 'reobf'
     mustRunAfter 'publish'
     onlyIf { return project.hasProperty('curseforge_key') }
 
     if (project.hasProperty('curseforge_key')) apiKey = project.curseforge_key
-    projectId = project.curse_projectId
-    changelog = ''
+    projectId = 223797
+    changelog = project.hasProperty('changelog') ? project.changelog : ''
     releaseType = 'release'
 }

@@ -10,8 +10,13 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.annotation.Nonnull;
-import java.util.*;
 
 @Mod(modid = HelpFixer.MOD_ID, name = HelpFixer.MOD_ID, acceptableRemoteVersions = "*")
 public class HelpFixer {
@@ -68,6 +73,7 @@ public class HelpFixer {
      * Checks to see if an {@link net.minecraft.command.ICommand ICommand} has a valid compareTo method
      *
      * @param command the command
+     *
      * @return {@code true} if the compareTo method is valid, {@code false} if not
      */
     @SuppressWarnings("unchecked")
