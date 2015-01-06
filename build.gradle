@@ -162,4 +162,6 @@ curse {
     projectId = 223797
     changelog = project.hasProperty('changelog') ? project.changelog : ''
     releaseType = 'release'
+    
+    additionalArtifact sourcesJar, javadocJar, deobfJar
 }
