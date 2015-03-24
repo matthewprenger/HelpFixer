@@ -8,7 +8,7 @@ buildscript {
 }
 
 apply plugin: 'forge'
-apply plugin: 'maven-publish'
+apply plugin: 'maven'
 apply plugin: 'curseforge'
 
 group = 'com.matthewprenger.helpfixer'
@@ -58,28 +58,7 @@ processResources {
     }
 }
 
-task sourcesJar(type: Jar, dependsOn: sourceMainJava) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
-    classifier = 'javadoc'
-}
-
-task deobfJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.output
-    classifier = 'deobf'
-}
-
-tasks.assemble.dependsOn sourcesJar, javadocJar, deobfJar
-
-tasks.withType(JavaCompile) { task ->
-    task.options.encoding = 'UTF-8'
-}
-
-def manifestAttributes = [
+def commonManifest = [
         'Built-By'              : System.getProperty('user.name'),
         'Created-By'            : "${System.getProperty('java.version')} + (${System.getProperty('java.vendor')})",
         'Implementation-Version': project.version,
@@ -88,72 +67,101 @@ def manifestAttributes = [
         'Forge-Version'         : forge_version
 ]
 
-tasks.withType(Jar) { task -> task.manifest.mainAttributes(manifestAttributes) }
+jar {
+    manifest.mainAttributes(commonManifest)
+}
 
-tasks.withType(JavaCompile) { task -> task.options.encoding = 'UTF-8' }
+task sourcesJar(type: Jar) {
+    manifest.mainAttributes(commonManifest)
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
 
-publishing {
-    tasks.publish.dependsOn 'build'
-    publications {
-        mavenJava(MavenPublication) {
-            pom.withXml {
-                asNode().children().last() + {
-                    resolveStrategy = DELEGATE_FIRST
-                    name project.name
-                    description project.description
-                    url project.url
-                    inceptionYear project.inceptionYear
-                    packaging 'jar'
-                    scm {
-                        url 'https://github.com/matthewprenger/HelpFixer'
-                        connection 'scm:git:git://github.com/matthewprenger/HelpFixer.git'
-                        developerConnection 'scm:git:git@github.com:matthewprenger/HelpFixer.git'
-                    }
-                    issueManagement {
-                        system 'github'
-                        url 'https://github.com/matthewprenger/HelpFixer/issues'
-                    }
-                    licenses {
-                        license {
-                            name 'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE'
-                            url 'http://www.wtfpl.net/txt/copying/'
-                            distribution 'repo'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id 'matthewprenger'
-                            name 'Matthew Prenger'
-                            roles { role 'developer' }
-                        }
-                    }
-                }
-            }
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    manifest.mainAttributes(commonManifest)
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
 
-            artifact jar
-            artifact sourcesJar
-            artifact javadocJar
-            artifact deobfJar
-        }
-    }
+task deobfJar(type: Jar) {
+    manifest.mainAttributes(commonManifest)
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
 
-    repositories {
+tasks.assemble.dependsOn sourcesJar, javadocJar, deobfJar
+
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+    archives deobfJar
+}
+
+tasks.withType(JavaCompile) { task ->
+    task.options.encoding = 'UTF-8'
+    task.options.fork = true
+}
+
+uploadArchives {
+    dependsOn build
+    repositories.mavenDeployer {
         if (project.hasProperty('forgemaven_user') && project.hasProperty('forgemaven_password')) {
-            maven {
-                credentials {
-                    username project.forgemaven_user
-                    password project.forgemaven_password
-                }
-                url 'http://files.minecraftforge.net/maven/manage/upload'
+            repository(url: 'http://files.minecraftforge.net/maven/manage/upload') {
+                authentication(userName: project.forgemaven_user, password: project.forgemaven_password)
             }
         } else {
-            maven { url file('repo') }
+            repository(url: 'file://localhost/' + project.file('repo').getAbsolutePath())
+        }
+
+        pom {
+            groupId = project.group
+            version = project.version
+            artifactId = project.archivesBaseName
+        }
+
+        pom.project {
+            name project.name
+            packaging 'jar'
+            description project.description
+            url project.url
+            inceptionYear project.inceptionYear
+
+            scm {
+                url 'https://github.com/matthewprenger/HelpFixer'
+                connection 'scm:git:git://github.com/matthewprenger/HelpFixer.git'
+                developerConnection 'scm:git:git@github.com:matthewprenger/HelpFixer.git'
+            }
+
+            issueManagement {
+                system 'github'
+                url 'https://github.com/matthewprenger/HelpFixer/issues'
+            }
+
+            licenses {
+                license {
+                    name 'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE'
+                    url 'http://www.wtfpl.net/txt/copying/'
+                    distribution 'repo'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'matthewprenger'
+                    name 'Matthew Prenger'
+                    roles {
+                        role 'developer'
+                    }
+                }
+            }
         }
     }
 }
 
 curse {
-    mustRunAfter 'publish'
+    dependsOn build
+    mustRunAfter uploadArchives
     onlyIf { return project.hasProperty('curseforge_key') }
 
     if (project.hasProperty('curseforge_key')) {
@@ -161,7 +169,8 @@ curse {
     }
     projectId = 223797
     changelog = project.hasProperty('changelog') ? project.changelog : ''
-    releaseType = 'release'
-    
+    releaseType = project.hasProperty('releaseType') ? project.releaseType : 'release'
+    displayName = "HelpFixer - $project.version"
+
     additionalArtifact sourcesJar, javadocJar, deobfJar
 }
