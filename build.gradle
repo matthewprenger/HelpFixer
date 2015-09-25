@@ -1,18 +1,9 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven { url = "http://files.minecraftforge.net/maven" }
-        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
-    }
-    dependencies { classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT' }
+plugins {
+    id 'net.minecraftforge.gradle.forge' version '2.0.1'
+    id 'com.matthewprenger.cursegradle' version '1.0.1'
 }
 
-apply plugin: 'forge'
-apply plugin: 'maven'
-apply plugin: 'curseforge'
-
 group = 'com.matthewprenger.helpfixer'
-archivesBaseName = 'HelpFixer'
 
 if (System.getenv('BUILD_NUMBER') != null) {
     version += ".${System.getenv('BUILD_NUMBER')}"
@@ -27,11 +18,11 @@ minecraft {
 }
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    testCompile 'junit:junit:4.11'
+    testCompile 'junit:junit:4.12'
 }
 
 processResources {
@@ -71,106 +62,38 @@ jar {
     manifest.mainAttributes(commonManifest)
 }
 
-task sourcesJar(type: Jar) {
-    manifest.mainAttributes(commonManifest)
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    manifest.mainAttributes(commonManifest)
-    from javadoc.destinationDir
-    classifier = 'javadoc'
-}
-
 task deobfJar(type: Jar) {
     manifest.mainAttributes(commonManifest)
     from sourceSets.main.output
     classifier = 'deobf'
 }
 
-tasks.assemble.dependsOn sourcesJar, javadocJar, deobfJar
-
-artifacts {
-    archives jar
-    archives sourcesJar
-    archives javadocJar
-    archives deobfJar
-}
+tasks.assemble.dependsOn deobfJar
 
 tasks.withType(JavaCompile) { task ->
     task.options.encoding = 'UTF-8'
     task.options.fork = true
 }
 
-uploadArchives {
-    dependsOn build
-    repositories.mavenDeployer {
-        if (project.hasProperty('forgemaven_user') && project.hasProperty('forgemaven_password')) {
-            repository(url: 'http://files.minecraftforge.net/maven/manage/upload') {
-                authentication(userName: project.forgemaven_user, password: project.forgemaven_password)
-            }
-        } else {
-            repository(url: 'file://localhost/' + project.file('repo').getAbsolutePath())
+curseforge {
+    debug = true
+    apiKey = project.hasProperty('curseforge_key') ? project.curseforge_key : ''
+    project {
+        id = '223797'
+        changelog = project.hasProperty('changelog') ? project.changelog : ''
+        releaseType = project.hasProperty('releaseType') ? project.releaseType : 'release'
+        addGameVersion project.minecraft.version
+
+        mainArtifact(jar) {
+            displayName = "HelpFixer - $project.version"
         }
 
-        pom {
-            groupId = project.group
-            version = project.version
-            artifactId = project.archivesBaseName
+        addArtifact(sourceJar) {
+            displayName = "HelpFixer Sources - $project.version"
         }
 
-        pom.project {
-            name project.name
-            packaging 'jar'
-            description project.description
-            url project.url
-            inceptionYear project.inceptionYear
-
-            scm {
-                url 'https://github.com/matthewprenger/HelpFixer'
-                connection 'scm:git:git://github.com/matthewprenger/HelpFixer.git'
-                developerConnection 'scm:git:git@github.com:matthewprenger/HelpFixer.git'
-            }
-
-            issueManagement {
-                system 'github'
-                url 'https://github.com/matthewprenger/HelpFixer/issues'
-            }
-
-            licenses {
-                license {
-                    name 'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE'
-                    url 'http://www.wtfpl.net/txt/copying/'
-                    distribution 'repo'
-                }
-            }
-
-            developers {
-                developer {
-                    id 'matthewprenger'
-                    name 'Matthew Prenger'
-                    roles {
-                        role 'developer'
-                    }
-                }
-            }
+        addArtifact(deobfJar) {
+            displayName = "HelpFixer Deobfuscated - $project.version"
         }
     }
-}
-
-curse {
-    dependsOn build
-    mustRunAfter uploadArchives
-    onlyIf { return project.hasProperty('curseforge_key') }
-
-    if (project.hasProperty('curseforge_key')) {
-        apiKey = project.curseforge_key
-    }
-    projectId = 223797
-    changelog = project.hasProperty('changelog') ? project.changelog : ''
-    releaseType = project.hasProperty('releaseType') ? project.releaseType : 'release'
-    displayName = "HelpFixer - $project.version"
-
-    additionalArtifact sourcesJar, javadocJar, deobfJar
 }
