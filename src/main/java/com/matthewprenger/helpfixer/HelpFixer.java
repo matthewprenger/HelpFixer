@@ -16,20 +16,19 @@ import java.util.*;
 @Mod(
         modid = HelpFixer.MOD_ID,
         name = HelpFixer.MOD_ID,
-        acceptableRemoteVersions = "*",
-        acceptedMinecraftVersions = ""
+        acceptableRemoteVersions = "*"
 )
-public class HelpFixer {
+public final class HelpFixer {
 
     public static final String MOD_ID = "HelpFixer";
 
     @Mod.EventHandler
-    public void serverStarting(FMLServerStartingEvent event) {
+    public void onServerStarting(final FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandHelp() {
 
             @SuppressWarnings("unchecked")
             @Override
-            protected List<ICommand> getSortedPossibleCommands(ICommandSender sender) {
+            protected List<ICommand> getSortedPossibleCommands(final ICommandSender sender) {
                 List<ICommand> list = MinecraftServer.getServer().getCommandManager().getPossibleCommands(sender);
 
                 Iterator<ICommand> iterator = list.iterator();
@@ -59,7 +58,7 @@ public class HelpFixer {
 
     @SuppressWarnings("unchecked")
     @Mod.EventHandler
-    public void serverStarted(final FMLServerStartedEvent event) {
+    public void onServerStarted(final FMLServerStartedEvent event) {
         Collection<ICommand> commands = MinecraftServer.getServer().getCommandManager().getCommands().values();
 
         for (final ICommand command : commands) {
@@ -76,7 +75,7 @@ public class HelpFixer {
      * @return {@code true} if the compareTo method is valid, {@code false} if not
      */
     @SuppressWarnings("unchecked")
-    public static boolean validCompareTo(@Nonnull ICommand command) {
+    public static boolean validCompareTo(@Nonnull final ICommand command) {
         return command.compareTo(testCmd1) != command.compareTo(testCmd2);
     }
 
@@ -87,12 +86,12 @@ public class HelpFixer {
         }
 
         @Override
-        public String getCommandUsage(ICommandSender sender) {
+        public String getCommandUsage(final ICommandSender sender) {
             return null;
         }
 
         @Override
-        public void processCommand(ICommandSender sender, String[] args) {
+        public void processCommand(final ICommandSender sender, String[] args) {
         }
     };
 
@@ -103,12 +102,12 @@ public class HelpFixer {
         }
 
         @Override
-        public String getCommandUsage(ICommandSender sender) {
+        public String getCommandUsage(final ICommandSender sender) {
             return null;
         }
 
         @Override
-        public void processCommand(ICommandSender sender, String[] args) {
+        public void processCommand(final ICommandSender sender, final String[] args) {
         }
     };
 }

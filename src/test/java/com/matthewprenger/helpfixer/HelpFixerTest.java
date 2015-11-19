@@ -13,7 +13,7 @@ public class HelpFixerTest {
 
     @Test
     public void testValidCompareTo() {
-        ICommand cmd1 = new CommandBase() {
+        final ICommand cmd1 = new CommandBase() {
             @Override
             public String getCommandName() {
                 return "foo";
@@ -34,7 +34,7 @@ public class HelpFixerTest {
             }
         };
 
-        ICommand cmd2 = new CommandBase() {
+        final ICommand cmd2 = new CommandBase() {
             @Override
             public String getCommandName() {
                 return "foo";
@@ -55,7 +55,7 @@ public class HelpFixerTest {
             }
         };
 
-        ICommand cmd3 = new CommandBase() {
+        final ICommand cmd3 = new CommandBase() {
             @Override
             public String getCommandName() {
                 return "z";
