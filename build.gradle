@@ -1,7 +1,22 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+    }
+}
+
 plugins {
-    id 'net.minecraftforge.gradle.forge' version '2.0.2'
+//    id 'net.minecraftforge.gradle.forge' version '2.0.2'
     id 'com.matthewprenger.cursegradle' version '1.0.4'
 }
+
+apply plugin: 'net.minecraftforge.gradle.forge'
 
 group = 'com.matthewprenger.helpfixer'
 
@@ -15,6 +30,7 @@ minecraft {
     version = "$minecraft_version-$forge_version"
     mappings = mappings_version
     runDir = 'run'
+    makeObfSourceJar = false
 }
 
 repositories {
@@ -68,7 +84,6 @@ tasks.withType(JavaCompile) { task ->
 }
 
 curseforge {
-    debug = true
     apiKey = project.hasProperty('curseApiKey') ? project.curseApiKey : ''
     project {
         id = '223797'
@@ -80,8 +95,8 @@ curseforge {
             displayName = "HelpFixer - $project.version"
         }
 
-        addArtifact(sourceJar) {
-            displayName = "HelpFixer Sources - $project.version"
-        }
+        //addArtifact(sourceJar) {
+        //    displayName = "HelpFixer Sources - $project.version"
+        //}
     }
 }

@@ -29,33 +29,12 @@ public class HelpFixerTest {
             }
 
             @Override
-            public int compareTo(Object p_compareTo_1_) {
+            public int compareTo(ICommand command) {
                 return 0;
             }
         };
 
         final ICommand cmd2 = new CommandBase() {
-            @Override
-            public String getCommandName() {
-                return "foo";
-            }
-
-            @Override
-            public String getCommandUsage(ICommandSender sender) {
-                return null;
-            }
-
-            @Override
-            public void processCommand(ICommandSender sender, String[] args) {
-            }
-
-            @Override
-            public int compareTo(ICommand p_compareTo_1_) {
-                return 0;
-            }
-        };
-
-        final ICommand cmd3 = new CommandBase() {
             @Override
             public String getCommandName() {
                 return "z";
@@ -72,7 +51,6 @@ public class HelpFixerTest {
         };
 
         assertFalse(validCompareTo(cmd1));
-        assertFalse(validCompareTo(cmd2));
-        assertTrue(validCompareTo(cmd3));
+        assertTrue(validCompareTo(cmd2));
     }
 }
