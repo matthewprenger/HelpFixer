@@ -18,20 +18,9 @@ plugins {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-group = 'com.matthewprenger.helpfixer'
-
-if (System.getenv('BUILD_NUMBER') != null) {
-    version += ".${System.getenv('BUILD_NUMBER')}"
-} else {
-    version += ".CUSTOM"
-}
-
-minecraft {
-    version = "$minecraft_version-$forge_version"
-    mappings = mappings_version
-    runDir = 'run'
-    makeObfSourceJar = false
-}
+version = '1.2'
+minecraft.version = '1.8.8-11.15.0.1622-1.8.8'
+minecraft.mappings = 'snapshot_20151211'
 
 repositories {
     jcenter()
@@ -40,6 +29,18 @@ repositories {
 dependencies {
     testCompile 'junit:junit:4.12'
 }
+
+minecraft {
+    runDir = 'run'
+}
+
+if (System.getenv('BUILD_NUMBER') != null) {
+    version += ".${System.getenv('BUILD_NUMBER')}"
+} else {
+    version += ".0"
+}
+
+version = "$minecraft.version-$version"
 
 processResources {
     inputs.property "version", project.version
@@ -71,7 +72,7 @@ def commonManifest = [
         'Implementation-Version': project.version,
         'Implementation-Title'  : project.name,
         'Minecraft-Version'     : project.minecraft.version,
-        'Forge-Version'         : forge_version
+        'Forge-Version'         : project.minecraft.forgeVersion
 ]
 
 jar {
@@ -89,14 +90,17 @@ curseforge {
         id = '223797'
         changelog = project.hasProperty('changelog') ? project.changelog : ''
         releaseType = project.hasProperty('releaseType') ? project.releaseType : 'release'
-        addGameVersion project.minecraft.version
 
         mainArtifact(jar) {
             displayName = "HelpFixer - $project.version"
         }
 
-        //addArtifact(sourceJar) {
-        //    displayName = "HelpFixer Sources - $project.version"
-        //}
+        addArtifact(sourceJar) {
+            displayName = "HelpFixer Sources - $project.version"
+        }
     }
+}
+
+if (project.hasProperty('changelog')) {
+    println "Changelog: $project.changelog"
 }

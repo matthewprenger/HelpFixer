@@ -5,13 +5,17 @@ import net.minecraft.command.CommandHelp;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLLog;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
-import javax.annotation.Nonnull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.*;
+
+import javax.annotation.Nonnull;
 
 @Mod(
         modid = HelpFixer.MOD_ID,
@@ -20,25 +24,26 @@ import java.util.*;
 )
 public final class HelpFixer {
 
+    private static final Logger log = LogManager.getLogger();
+
     public static final String MOD_ID = "HelpFixer";
 
     @Mod.EventHandler
     public void onServerStarting(final FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandHelp() {
 
-            @SuppressWarnings("unchecked")
             @Override
             protected List<ICommand> getSortedPossibleCommands(final ICommandSender sender) {
-                List<ICommand> list = MinecraftServer.getServer().getCommandManager().getPossibleCommands(sender);
+                final List<ICommand> list = MinecraftServer.getServer().getCommandManager().getPossibleCommands(sender);
+                final Iterator<ICommand> iterator = list.iterator();
 
-                Iterator<ICommand> iterator = list.iterator();
                 while (iterator.hasNext()) {
-                    ICommand command = iterator.next();
+                    final ICommand command = iterator.next();
                     if (command.getCommandName() == null) {
-                        FMLLog.warning(String.format("[HelpFixer] Identified command with null name, Ignoring: %s", command.getClass().getName()));
+                        log.warn("Identified command with null name, Ignoring: {}", command.getClass().getName());
                         iterator.remove();
                     } else if (command.getCommandUsage(sender) == null) {
-                        FMLLog.warning(String.format("[HelpFixer] Identified command with null usage, Ignoring: %s", command.getClass().getName()));
+                        log.warn("Identified command with null usage, Ignoring: {}", command.getClass().getName());
                         iterator.remove();
                     }
                 }
@@ -56,14 +61,13 @@ public final class HelpFixer {
         });
     }
 
-    @SuppressWarnings("unchecked")
     @Mod.EventHandler
     public void onServerStarted(final FMLServerStartedEvent event) {
         Collection<ICommand> commands = MinecraftServer.getServer().getCommandManager().getCommands().values();
 
         for (final ICommand command : commands) {
             if (!(validCompareTo(command))) {
-                FMLLog.warning(String.format("[HelpFixer] Command %s incorrectly overrides compareTo: %s", command.getCommandName(), command.getClass().getName()));
+                log.warn("Command {} incorrectly overrides compareTo: %s", command.getCommandName(), command.getClass().getName());
             }
         }
     }
@@ -72,9 +76,10 @@ public final class HelpFixer {
      * Checks to see if an {@link net.minecraft.command.ICommand ICommand} has a valid compareTo method
      *
      * @param command the command
+     *
      * @return {@code true} if the compareTo method is valid, {@code false} if not
      */
-    @SuppressWarnings("unchecked")
+
     public static boolean validCompareTo(@Nonnull final ICommand command) {
         return command.compareTo(testCmd1) != command.compareTo(testCmd2);
     }
