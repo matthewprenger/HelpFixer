@@ -19,8 +19,8 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = '1.2'
-minecraft.version = '1.8.8-11.15.0.1622-1.8.8'
-minecraft.mappings = 'snapshot_20151211'
+minecraft.version = '1.8.9-11.15.0.1662'
+minecraft.mappings = 'snapshot_20151230'
 
 repositories {
     jcenter()
