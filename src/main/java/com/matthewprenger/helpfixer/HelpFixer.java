@@ -6,6 +6,7 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -26,15 +27,15 @@ public final class HelpFixer {
 
     private static final Logger log = LogManager.getLogger();
 
-    public static final String MOD_ID = "HelpFixer";
+    static final String MOD_ID = "HelpFixer";
 
     @Mod.EventHandler
     public void onServerStarting(final FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandHelp() {
 
             @Override
-            protected List<ICommand> getSortedPossibleCommands(final ICommandSender sender) {
-                final List<ICommand> list = MinecraftServer.getServer().getCommandManager().getPossibleCommands(sender);
+            protected List<ICommand> getSortedPossibleCommands(final ICommandSender sender, final MinecraftServer server) {
+                final List<ICommand> list = server.getCommandManager().getPossibleCommands(sender);
                 final Iterator<ICommand> iterator = list.iterator();
 
                 while (iterator.hasNext()) {
@@ -63,7 +64,7 @@ public final class HelpFixer {
 
     @Mod.EventHandler
     public void onServerStarted(final FMLServerStartedEvent event) {
-        Collection<ICommand> commands = MinecraftServer.getServer().getCommandManager().getCommands().values();
+        Collection<ICommand> commands = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager().getCommands().values();
 
         for (final ICommand command : commands) {
             if (!(validCompareTo(command))) {
@@ -80,7 +81,7 @@ public final class HelpFixer {
      * @return {@code true} if the compareTo method is valid, {@code false} if not
      */
 
-    public static boolean validCompareTo(@Nonnull final ICommand command) {
+    private static boolean validCompareTo(@Nonnull final ICommand command) {
         return command.compareTo(testCmd1) != command.compareTo(testCmd2);
     }
 
@@ -96,7 +97,7 @@ public final class HelpFixer {
         }
 
         @Override
-        public void processCommand(final ICommandSender sender, String[] args) {
+        public void execute(final MinecraftServer server, final ICommandSender sender, String[] args) {
         }
     };
 
@@ -112,7 +113,7 @@ public final class HelpFixer {
         }
 
         @Override
-        public void processCommand(final ICommandSender sender, final String[] args) {
+        public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) {
         }
     };
 }
