@@ -3,6 +3,7 @@ package com.matthewprenger.helpfixer;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 import org.junit.Test;
 
 import static com.matthewprenger.helpfixer.HelpFixer.validCompareTo;
@@ -25,7 +26,7 @@ public class HelpFixerTest {
             }
 
             @Override
-            public void processCommand(ICommandSender sender, String[] args) {
+            public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
             }
 
             @Override
@@ -46,7 +47,7 @@ public class HelpFixerTest {
             }
 
             @Override
-            public void processCommand(ICommandSender sender, String[] args) {
+            public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
             }
         };
 

@@ -5,18 +5,19 @@ import net.minecraft.command.CommandHelp;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
-
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
-
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 
 @Mod(
         modid = HelpFixer.MOD_ID,
@@ -81,7 +82,7 @@ public final class HelpFixer {
      * @return {@code true} if the compareTo method is valid, {@code false} if not
      */
 
-    private static boolean validCompareTo(@Nonnull final ICommand command) {
+    static boolean validCompareTo(@Nonnull final ICommand command) {
         return command.compareTo(testCmd1) != command.compareTo(testCmd2);
     }
 
