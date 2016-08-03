@@ -21,14 +21,15 @@ import java.util.List;
 
 @Mod(
         modid = HelpFixer.MOD_ID,
-        name = HelpFixer.MOD_ID,
+        name = HelpFixer.MOD_NAME,
         acceptableRemoteVersions = "*"
 )
 public final class HelpFixer {
 
     private static final Logger log = LogManager.getLogger();
 
-    static final String MOD_ID = "HelpFixer";
+    static final String MOD_ID = "helpfixer";
+    static final String MOD_NAME = "HelpFixer";
 
     @Mod.EventHandler
     public void onServerStarting(final FMLServerStartingEvent event) {
@@ -41,12 +42,17 @@ public final class HelpFixer {
 
                 while (iterator.hasNext()) {
                     final ICommand command = iterator.next();
-                    if (command.getCommandName() == null) {
-                        log.warn("Identified command with null name, Ignoring: {}", command.getClass().getName());
-                        iterator.remove();
-                    } else if (command.getCommandUsage(sender) == null) {
-                        log.warn("Identified command with null usage, Ignoring: {}", command.getClass().getName());
-                        iterator.remove();
+
+                    try {
+                        if (command.getCommandName() == null) {
+                            log.warn("Identified command with null name, Ignoring: {}", command.getClass().getName());
+                            iterator.remove();
+                        } else if (command.getCommandUsage(sender) == null) {
+                            log.warn("Identified command with null usage, Ignoring: {}", command.getClass().getName());
+                            iterator.remove();
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to test command '{}'", command, e);
                     }
                 }
 
@@ -83,7 +89,12 @@ public final class HelpFixer {
      */
 
     static boolean validCompareTo(@Nonnull final ICommand command) {
-        return command.compareTo(testCmd1) != command.compareTo(testCmd2);
+        try {
+            return command.compareTo(testCmd1) != command.compareTo(testCmd2);
+        } catch (Exception e) {
+            log.warn("Failed to test command '{}' for a valid compareTo", command, e);
+            return true; // True because we don't know that the impl is bad, just that it throws an exception
+        }
     }
 
     private static final ICommand testCmd1 = new CommandBase() {

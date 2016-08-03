@@ -11,16 +11,11 @@ buildscript {
     }
 }
 
-plugins {
-//    id 'net.minecraftforge.gradle.forge' version '2.0.2'
-    id 'com.matthewprenger.cursegradle' version '1.0.7'
-}
-
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = '1.3'
-minecraft.version = '1.9.4-12.17.0.1908-1.9.4'
-minecraft.mappings = 'snapshot_20160518'
+version = '1.4.15'
+minecraft.version = '1.10.2-12.18.1.2045'
+minecraft.mappings = 'snapshot_20160803'
 
 repositories {
     jcenter()
@@ -32,12 +27,6 @@ dependencies {
 
 minecraft {
     runDir = 'run'
-}
-
-if (System.getenv('BUILD_NUMBER') != null) {
-    version += ".${System.getenv('BUILD_NUMBER')}"
-} else {
-    version += ".0"
 }
 
 [jar, sourceJar]*.version = "$minecraft.version-$project.version"
@@ -82,25 +71,4 @@ jar {
 tasks.withType(JavaCompile) { task ->
     task.options.encoding = 'UTF-8'
     task.options.fork = true
-}
-
-curseforge {
-    apiKey = project.hasProperty('curseApiKey') ? project.curseApiKey : ''
-    project {
-        id = '223797'
-        changelog = project.hasProperty('changelog') ? project.changelog : ''
-        releaseType = project.hasProperty('releaseType') ? project.releaseType : 'release'
-
-        mainArtifact(jar) {
-            displayName = "HelpFixer - $project.version"
-        }
-
-        addArtifact(sourceJar) {
-            displayName = "HelpFixer Sources - $project.version"
-        }
-    }
-}
-
-if (project.hasProperty('changelog')) {
-    println "Changelog: $project.changelog"
 }
