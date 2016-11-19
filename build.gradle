@@ -11,6 +11,10 @@ buildscript {
     }
 }
 
+plugins {
+    id "com.matthewprenger.cursegradle" version "1.0.8"
+}
+
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = '1.4'
@@ -76,4 +80,22 @@ jar {
 tasks.withType(JavaCompile) { task ->
     task.options.encoding = 'UTF-8'
     task.options.fork = true
+}
+
+curseforge {
+    debug = true
+    apiKey = project.hasProperty('curseApiKey') ? project.curseApiKey : 'foo'
+    project {
+        id = '223797'
+        releaseType = 'release'
+        changelog = 'See the changes here: https://github.com/matthewprenger/HelpFixer/commits/master'
+
+        mainArtifact(jar) {
+            displayName = "HelpFixer - $project.version"
+        }
+
+        addArtifact(sourceJar) {
+            displayName = "HelpFixer Sources - $project.version"
+        }
+    }
 }
