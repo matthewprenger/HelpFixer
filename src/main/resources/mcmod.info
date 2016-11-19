@@ -1,6 +1,6 @@
 [
   {
-    "modid": "HelpFixer",
+    "modid": "helpfixer",
     "name": "HelpFixer",
     "version": "${version}",
     "description": "${description}",

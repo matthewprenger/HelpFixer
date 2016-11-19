@@ -16,12 +16,13 @@ public class HelpFixerTest {
     public void testValidCompareTo() {
         final ICommand cmd1 = new CommandBase() {
             @Override
-            public String getCommandName() {
+            public String getName() {
                 return "foo";
             }
 
+            @SuppressWarnings("ConstantConditions")
             @Override
-            public String getCommandUsage(ICommandSender sender) {
+            public String getUsage(ICommandSender sender) {
                 return null;
             }
 
@@ -37,12 +38,13 @@ public class HelpFixerTest {
 
         final ICommand cmd2 = new CommandBase() {
             @Override
-            public String getCommandName() {
+            public String getName() {
                 return "z";
             }
 
+            @SuppressWarnings("ConstantConditions")
             @Override
-            public String getCommandUsage(ICommandSender sender) {
+            public String getUsage(ICommandSender sender) {
                 return null;
             }
 

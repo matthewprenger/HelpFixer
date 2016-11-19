@@ -44,10 +44,10 @@ public final class HelpFixer {
                     final ICommand command = iterator.next();
 
                     try {
-                        if (command.getCommandName() == null) {
+                        if (command.getName() == null) {
                             log.warn("Identified command with null name, Ignoring: {}", command.getClass().getName());
                             iterator.remove();
-                        } else if (command.getCommandUsage(sender) == null) {
+                        } else if (command.getUsage(sender) == null) {
                             log.warn("Identified command with null usage, Ignoring: {}", command.getClass().getName());
                             iterator.remove();
                         }
@@ -60,7 +60,7 @@ public final class HelpFixer {
 
                     @Override
                     public int compare(ICommand o1, ICommand o2) {
-                        return o1.getCommandName().compareTo(o2.getCommandName());
+                        return o1.getName().compareTo(o2.getName());
                     }
                 });
                 return list;
@@ -75,7 +75,7 @@ public final class HelpFixer {
 
         for (final ICommand command : commands) {
             if (!(validCompareTo(command))) {
-                log.warn("Command {} incorrectly overrides compareTo: %s", command.getCommandName(), command.getClass().getName());
+                log.warn("Command {} incorrectly overrides compareTo: %s", command.getName(), command.getClass().getName());
             }
         }
     }
@@ -84,7 +84,6 @@ public final class HelpFixer {
      * Checks to see if an {@link net.minecraft.command.ICommand ICommand} has a valid compareTo method
      *
      * @param command the command
-     *
      * @return {@code true} if the compareTo method is valid, {@code false} if not
      */
 
@@ -99,12 +98,13 @@ public final class HelpFixer {
 
     private static final ICommand testCmd1 = new CommandBase() {
         @Override
-        public String getCommandName() {
+        public String getName() {
             return "a";
         }
 
+        @SuppressWarnings("ConstantConditions")
         @Override
-        public String getCommandUsage(final ICommandSender sender) {
+        public String getUsage(final ICommandSender sender) {
             return null;
         }
 
@@ -115,12 +115,13 @@ public final class HelpFixer {
 
     private static final ICommand testCmd2 = new CommandBase() {
         @Override
-        public String getCommandName() {
+        public String getName() {
             return "z";
         }
 
+        @SuppressWarnings("ConstantConditions")
         @Override
-        public String getCommandUsage(final ICommandSender sender) {
+        public String getUsage(final ICommandSender sender) {
             return null;
         }
 

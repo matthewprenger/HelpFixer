@@ -13,9 +13,15 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = '1.4.15'
-minecraft.version = '1.10.2-12.18.1.2045'
-minecraft.mappings = 'snapshot_20160803'
+version = '1.4'
+minecraft.version = '1.11-13.19.0.2153'
+minecraft.mappings = 'snapshot_20161118'
+
+if(System.getenv('BUILD_NUMBER') != null) {
+    version += "+${System.getenv('BUILD_NUMBER')}"
+} else {
+    version += "+9999"
+}
 
 repositories {
     jcenter()
@@ -56,7 +62,6 @@ processResources {
 }
 
 def commonManifest = [
-        'Built-By'              : System.getProperty('user.name'),
         'Created-By'            : "${System.getProperty('java.version')} + (${System.getProperty('java.vendor')})",
         'Implementation-Version': project.version,
         'Implementation-Title'  : project.name,
