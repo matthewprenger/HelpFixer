@@ -83,7 +83,6 @@ tasks.withType(JavaCompile) { task ->
 }
 
 curseforge {
-    debug = true
     apiKey = project.hasProperty('curseApiKey') ? project.curseApiKey : 'foo'
     project {
         id = '223797'
