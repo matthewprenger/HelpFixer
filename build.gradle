@@ -28,6 +28,8 @@ if(System.getenv('BUILD_NUMBER') != null) {
     version += ".9999"
 }
 
+version = "$minecraft.version-$version"
+
 repositories {
     jcenter()
 }
@@ -39,8 +41,6 @@ dependencies {
 minecraft {
     runDir = 'run'
 }
-
-[jar, sourceJar]*.version = "$minecraft.version-$project.version"
 
 processResources {
     inputs.property "version", project.version
