@@ -15,6 +15,7 @@ plugins {
     id "com.matthewprenger.cursegradle" version "1.0.8"
 }
 
+apply plugin: 'maven'
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = '1.4'
@@ -22,9 +23,9 @@ minecraft.version = '1.11-13.19.0.2153'
 minecraft.mappings = 'snapshot_20161118'
 
 if(System.getenv('BUILD_NUMBER') != null) {
-    version += "+${System.getenv('BUILD_NUMBER')}"
+    version += ".${System.getenv('BUILD_NUMBER')}"
 } else {
-    version += "+9999"
+    version += ".9999"
 }
 
 repositories {
@@ -95,6 +96,59 @@ curseforge {
 
         addArtifact(sourceJar) {
             displayName = "HelpFixer Sources - $project.version"
+        }
+    }
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        dependsOn 'build'
+
+        if (project.hasProperty('forgeMavenPass')) {
+            repository(url: "http://files.minecraftforge.net/maven/manage/upload") {
+                authentication(userName: "matthewprenger", password: project.getProperty('forgeMavenPass'))
+            }
+        } else {
+            repository(url: 'file://localhost/' + project.file('repo').getAbsolutePath())
+        }
+
+        pom {
+            groupId = project.group
+            version = project.version
+            artifactId = project.archivesBaseName
+            project {
+                name project.archivesBaseName
+                packaging 'jar'
+                description 'HelpFixer'
+                url 'https://github.com/matthewprenger/HelpFixer'
+
+                scm {
+                    url 'https://github.com/matthewprenger/HelpFixer'
+                    connection 'scm:git:git://github.com/matthewprenger/HelpFixer.git'
+                    developerConnection 'scm:git:git@github.com:matthewprenger/HelpFixer.git'
+                }
+
+                issueManagement {
+                    system 'github'
+                    url 'https://github.com/matthewprenger/HelpFixer/issues'
+                }
+
+                licenses {
+                    license {
+                        name 'Do What You Want To Public License'
+                        url 'https://raw.githubusercontent.com/matthewprenger/HelpFixer/master/LICENSE'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'matthewprenger'
+                        name 'Matthew Prenger'
+                        roles { role 'developer' }
+                    }
+                }
+            }
         }
     }
 }
