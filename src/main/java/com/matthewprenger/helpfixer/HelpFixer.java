@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +34,7 @@ public final class HelpFixer {
     public void onServerStarting(final FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandHelp() {
 
+            @SuppressWarnings("ConstantConditions")
             @Override
             protected List<ICommand> getSortedPossibleCommands(final ICommandSender sender, final MinecraftServer server) {
                 final List<ICommand> list = server.getCommandManager().getPossibleCommands(sender);
@@ -56,13 +56,7 @@ public final class HelpFixer {
                     }
                 }
 
-                Collections.sort(list, new Comparator<ICommand>() {
-
-                    @Override
-                    public int compare(ICommand o1, ICommand o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
+                list.sort(Comparator.comparing(ICommand::getName));
                 return list;
             }
 
